@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/docker/" />
+  <Folder Name="/github/" />
+  <Folder Name="/src/">
+    <Project Path="PeopleDesk.Api/PeopleDesk.Api.csproj" />
+    <Project Path="PeopleDesk.Application/PeopleDesk.Application.csproj" />
+    <Project Path="PeopleDesk.Domain/PeopleDesk.Domain.csproj" />
+    <Project Path="PeopleDesk.Infrastructure/PeopleDesk.Infrastructure.csproj" />
+    <Project Path="PeopleDesk.Shared/PeopleDesk.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="PeopleDesk.IntegrationTests/PeopleDesk.IntegrationTests.csproj" />
+    <Project Path="PeopleDesk.UnitTests/PeopleDesk.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/ui/">
+    <Project Path="PeopleDesk.Blazor/PeopleDesk.Blazor.csproj" />
+  </Folder>
+</Solution>
