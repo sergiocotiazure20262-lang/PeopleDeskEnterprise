@@ -4,7 +4,10 @@
       <Build />
     </Project>
   </Folder>
-  <Folder Name="/github/" />
+  <Folder Name="/github/">
+    <File Path=".github/workflows/master_peopledeskenterprise-sergio.yml" />
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="PeopleDesk.Api/PeopleDesk.Api.csproj" />
     <Project Path="PeopleDesk.Application/PeopleDesk.Application.csproj" />

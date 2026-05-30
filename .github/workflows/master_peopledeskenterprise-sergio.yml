@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - peopledeskenterprise-sergio
+name: Build, test and deploy ASP.Net Core API to Azure Web App - peopledeskenterprise-sergio
 
 on:
   push:
@@ -11,43 +11,103 @@ on:
 
 jobs:
   build:
+    name: BUILD
     runs-on: windows-latest
+
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      - name: Restore dependencies
+        run: dotnet restore PeopleDeskEnterprise.slnx
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Build solution
+        run: dotnet build PeopleDeskEnterprise.slnx --configuration Release --no-restore
 
-      - name: Upload artifact for deployment job
+      - name: Publish API project
+        run: dotnet publish PeopleDesk.Api/PeopleDesk.Api.csproj --configuration Release --no-build --output "${{ env.DOTNET_ROOT }}/myapp"
+
+      - name: Upload API artifact
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          name: .net-api
+          path: ${{ env.DOTNET_ROOT }}/myapp
 
-  deploy:
+  unit-tests:
+    name: UNIT TESTS
     runs-on: windows-latest
     needs: build
+
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore dependencies
+        run: dotnet restore PeopleDeskEnterprise.slnx
+
+      - name: Build solution
+        run: dotnet build PeopleDeskEnterprise.slnx --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: dotnet test PeopleDesk.UnitTests/PeopleDesk.UnitTests.csproj --configuration Release --no-build --verbosity normal
+
+  integration-tests:
+    name: INTEGRATION TESTS
+    runs-on: windows-latest
+    needs: unit-tests
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore dependencies
+        run: dotnet restore PeopleDeskEnterprise.slnx
+
+      - name: Build solution
+        run: dotnet build PeopleDeskEnterprise.slnx --configuration Release --no-restore
+
+      - name: Run integration tests
+        run: dotnet test PeopleDesk.IntegrationTests/PeopleDesk.IntegrationTests.csproj --configuration Release --no-build --verbosity normal
+
+  deploy:
+    name: DEPLOY
+    runs-on: windows-latest
+    needs: integration-tests
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download API artifact
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
-      
+          name: .net-api
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -62,4 +122,3 @@ jobs:
           app-name: 'peopledeskenterprise-sergio'
           slot-name: 'Production'
           package: .
-          
